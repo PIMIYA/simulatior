@@ -1,0 +1,40 @@
+- time: 1.2
+  type: 200
+  args:
+    x: 270
+    y: 1020
+- time: 1.5
+  type: 201
+  args:
+    x: 270
+    y: 1020
+- time: 1.8
+  type: 200
+  args:
+    x: 200
+    y: 250
+    duration: 1
+- time: 3
+  type: 1
+  args:
+    index: 1
+- time: 3.3
+  type: 300
+  args:
+    key:
+      - h
+      - o
+    presses: 2
+    interval: 0.1
+- time: 3.8
+  type: 202
+  args:
+    x: 200
+    y: 250
+    duration: 1
+- time: 4.1
+  type: 203
+  args:
+    x: 200
+    y: 250
+    duration: 1
