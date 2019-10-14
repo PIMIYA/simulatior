@@ -56,7 +56,9 @@ class Actor:
         return True
 
     def open_browser(self, **kwargs):
-        self._web.open_browser()
+        x = kwargs['x'] if 'x' in kwargs else 10
+        y = kwargs['y'] if 'y' in kwargs else 10
+        self._web.open_browser(x=x, y=y)
 
     def open_url(self, **kwargs):
         url = kwargs['url'] if 'url' in kwargs else None
