@@ -89,20 +89,20 @@ class Controller:
     def open_browser(self, url: [str, None] = None, x: int = 10, y: int = 10):
         _path = None
         system_name = platform.system()
-        if system_name == 'Windows':
-            _path = './bin/driver/chromedriver.exe'
-        if system_name == 'Darwin':
-            _path = './bin/driver/chromedriver'
+        if system_name == "Windows":
+            _path = "./bin/driver/chromedriver.exe"
+        if system_name == "Darwin":
+            _path = "./bin/driver/chromedriver"
         if _path is None:
-            logging.error(f'platform {system_name} not supported')
+            logging.error(f"platform {system_name} not supported")
             return
 
         if self.driver is None:
             _options = Options()
-            _options.add_experimental_option('useAutomationExtension', False)
+            _options.add_experimental_option("useAutomationExtension", False)
             _options.add_experimental_option(
-                'excludeSwitches', ['enable-automation'])
-            _options.add_argument(f'--window-position={x},{y}')
+                "excludeSwitches", ["enable-automation"])
+            _options.add_argument(f"--window-position={x},{y}")
             self.driver = webdriver.Chrome(
                 executable_path=_path, options=_options)
         if url is not None:
@@ -117,9 +117,9 @@ class Controller:
         if not self._is_driver_valid():
             return
         link = self._get_element(element, -1)
-        logging.info(link.get_attribute('href'))
+        logging.info(link.get_attribute("href"))
         if link is None:
-            logging.error(f'can not found any {element}')
+            logging.error(f"can not found any {element}")
             return
         self._action_click_element(element=link)
 
@@ -127,9 +127,9 @@ class Controller:
         if not self._is_driver_valid():
             return
         link = self._get_element(element, index)
-        logging.info(link.get_attribute('href'))
+        logging.info(link.get_attribute("href"))
         if link is None:
-            logging.error(f'can not found any {element}')
+            logging.error(f"can not found any {element}")
             return
         self._action_click_element(element=link)
 
@@ -137,19 +137,13 @@ class Controller:
                      duration: float = 0.3):
         if not self._is_driver_valid():
             return
-        loc = self.driver.get_window_position()
-        size = self.driver.get_window_size()
-        # logging.info(f'{loc} -> {size}')
-        x = loc['x']
-        y = loc['y']
-        w = size['width']
+        rect = self.driver.get_window_rect()
+        x, y, w, h = rect["x"], rect["y"], rect["width"], rect["height"]
         shift_x = w // 8
-        # logging.info(f'offset: {offset}')
         target_x = self.xOffset + x + shift_x
         target_y = self.yOffset + y + 5
         self.mouse_move(x=target_x, y=target_y, duration=duration)
         gui.drag(xOffset=offset_x, yOffset=offset_y, duration=duration)
-        # self._dump_window_rect()
 
     def move_to_browser_close_button(self, offset_x: int = -20,
                                      offset_y: int = 10,
@@ -157,10 +151,7 @@ class Controller:
         if not self._is_driver_valid():
             return
         rect = self.driver.get_window_rect()
-        x = rect['x']
-        y = rect['y']
-        w = rect['width']
-        # h = rect['height']
+        x, y, w, h = rect["x"], rect["y"], rect["width"], rect["height"]
         target_x = self.xOffset + x + w + offset_x
         target_y = self.yOffset + y + offset_y
         self.mouse_move(x=target_x, y=target_y, duration=duration)
@@ -173,10 +164,7 @@ class Controller:
         # target_width += 12
         # target_height += 3
         rect = self.driver.get_window_rect()
-        x = rect['x']
-        y = rect['y']
-        w = rect['width']
-        h = rect['height']
+        x, y, w, h = rect["x"], rect["y"], rect["width"], rect["height"]
         target_x = self.xOffset + x + w - 10
         target_y = self.yOffset + y + h - 5
         self.mouse_move(x=target_x, y=target_y, duration=move_duration)
@@ -186,7 +174,7 @@ class Controller:
 
     # endregion
 
-    # region pyautogui
+    # region gui
     @staticmethod
     def mouse_move(x: float, y: float, duration: float = 0.3):
         gui.moveTo(x=x, y=y, duration=duration)
