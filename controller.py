@@ -12,19 +12,25 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
 
 
+# 如果有需要把滑鼠移動到左上角需要打開此設定
+# 此設定是為了防止控制滑鼠的時候進入到無法控制的狀況而設置的防護措施，
+# 只要將滑鼠手動控制到左上角則會強制解除控制
+# gui.FAILSAFE = False
+
+
 class Controller:
     SCROLL_GAP: int = 300
     SCROLL_INTERVAL: float = 0.25
 
     def __init__(self):
+        self.xOffset = 6
+        self.yOffset = 0
         self.driver: WebDriver = None
 
     def _dump_window_rect(self):
         if not self._is_driver_valid():
             return
-        loc = self.window_position()
-        size = self.driver.get_window_size()
-        logging.info(f'{loc} -> {size}')
+        logging.info(f'{self.driver.get_window_rect()}')
 
     def _is_driver_valid(self) -> bool:
         if self.driver is None:
@@ -74,6 +80,12 @@ class Controller:
         actions.perform()
 
     # region selenium
+    def close_browser(self, duration: float = 0.3):
+        if self.driver is not None:
+            self.move_to_browser_close_button(duration=duration)
+            self.driver.quit()
+            self.driver = None
+
     def open_browser(self, url: [str, None] = None, x: int = 10, y: int = 10):
         _path = None
         system_name = platform.system()
@@ -101,11 +113,6 @@ class Controller:
             return
         self.driver.maximize_window()
 
-    def window_position(self):
-        if not self._is_driver_valid():
-            return
-        return self.driver.get_window_position()
-
     def click_random_element(self, element: str):
         if not self._is_driver_valid():
             return
@@ -126,26 +133,56 @@ class Controller:
             return
         self._action_click_element(element=link)
 
-    def drag(self, offset_x: int = 0, offset_y: int = 0, duration=0.3):
+    def drag_browser(self, offset_x: int = 0, offset_y: int = 0,
+                     duration: float = 0.3):
         if not self._is_driver_valid():
             return
-        loc = self.window_position()
+        loc = self.driver.get_window_position()
         size = self.driver.get_window_size()
         # logging.info(f'{loc} -> {size}')
         x = loc['x']
         y = loc['y']
         w = size['width']
-        offset = w // 8
+        shift_x = w // 8
         # logging.info(f'offset: {offset}')
-        target_x = x + 5 + offset
-        target_y = y + 5
+        target_x = self.xOffset + x + shift_x
+        target_y = self.yOffset + y + 5
         self.mouse_move(x=target_x, y=target_y, duration=duration)
         gui.drag(xOffset=offset_x, yOffset=offset_y, duration=duration)
         # self._dump_window_rect()
 
-    def quit(self):
-        if self.driver is not None:
-            self.driver.quit()
+    def move_to_browser_close_button(self, offset_x: int = -20,
+                                     offset_y: int = 10,
+                                     duration: float = 0.3):
+        if not self._is_driver_valid():
+            return
+        rect = self.driver.get_window_rect()
+        x = rect['x']
+        y = rect['y']
+        w = rect['width']
+        # h = rect['height']
+        target_x = self.xOffset + x + w + offset_x
+        target_y = self.yOffset + y + offset_y
+        self.mouse_move(x=target_x, y=target_y, duration=duration)
+
+    def resize_browser(self, target_width: int, target_height: int,
+                       move_duration: float = 0.3,
+                       drag_duration: float = 0.3):
+        if not self._is_driver_valid():
+            return
+        # target_width += 12
+        # target_height += 3
+        rect = self.driver.get_window_rect()
+        x = rect['x']
+        y = rect['y']
+        w = rect['width']
+        h = rect['height']
+        target_x = self.xOffset + x + w - 10
+        target_y = self.yOffset + y + h - 5
+        self.mouse_move(x=target_x, y=target_y, duration=move_duration)
+        target_x = x + target_width
+        target_y = y + target_height
+        gui.dragTo(x=target_x, y=target_y, duration=drag_duration)
 
     # endregion
 
@@ -179,19 +216,3 @@ class Controller:
         gui.hotkey(key1, key2)
 
     # endregion
-
-
-if __name__ == '__main__':
-    from common import setting_logging
-
-
-    def test():
-        setting_logging()
-        ctl2 = Controller()
-        ctl2.open_browser('https://www.gamer.com.tw/')
-        ctl2.drag(offset_x=100, offset_y=100)
-        time.sleep(3)
-        ctl2.quit()
-
-
-    test()
