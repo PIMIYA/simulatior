@@ -2,7 +2,7 @@ import logging
 from enum import Enum, unique
 import pyautogui as autogui
 
-from controller import WebController
+from controller import Controller
 
 
 @unique
@@ -39,7 +39,7 @@ class Actor:
             ActionType.KEY_TYPEWRITE: self.key_typewrite,
             ActionType.KEY_HOTKEY: self.key_hotkey,
         }
-        self._web = WebController()
+        self._web = Controller()
 
     def do_action(self, step) -> bool:
         logging.info(f'run {step}')

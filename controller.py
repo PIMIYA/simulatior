@@ -1,24 +1,30 @@
 import logging
-import os
 import platform
 import random
 import time
 
+import pyautogui as gui
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver import ActionChains
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
-import pyautogui as autogui
 
 
-class WebController:
+class Controller:
     SCROLL_GAP: int = 300
     SCROLL_INTERVAL: float = 0.25
 
     def __init__(self):
         self.driver: WebDriver = None
+
+    def _dump_window_rect(self):
+        if not self._is_driver_valid():
+            return
+        loc = self.window_position()
+        size = self.driver.get_window_size()
+        logging.info(f'{loc} -> {size}')
 
     def _is_driver_valid(self) -> bool:
         if self.driver is None:
@@ -52,6 +58,22 @@ class WebController:
         except NoSuchElementException:
             logging.error('NoSuchElementException')
 
+    def _action_click_element(self, element: [WebElement, None]):
+        if not self._is_driver_valid():
+            return
+        if element is None:
+            logging.error('element is None')
+            return
+        loc = element.location
+        for i in range(loc['y'] // self.SCROLL_GAP):
+            self.driver.execute_script(f'window.scrollBy(0, {self.SCROLL_GAP})')
+            time.sleep(self.SCROLL_INTERVAL)
+        actions = ActionChains(self.driver)
+        actions.move_to_element(element)
+        actions.click(element)
+        actions.perform()
+
+    # region selenium
     def open_browser(self, url: [str, None] = None, x: int = 10, y: int = 10):
         _path = None
         system_name = platform.system()
@@ -84,21 +106,6 @@ class WebController:
             return
         return self.driver.get_window_position()
 
-    def _action_click_element(self, element: [WebElement, None]):
-        if not self._is_driver_valid():
-            return
-        if element is None:
-            logging.error('element is None')
-            return
-        loc = element.location
-        for i in range(loc['y'] // self.SCROLL_GAP):
-            self.driver.execute_script(f'window.scrollBy(0, {self.SCROLL_GAP})')
-            time.sleep(self.SCROLL_INTERVAL)
-        actions = ActionChains(self.driver)
-        actions.move_to_element(element)
-        actions.click(element)
-        actions.perform()
-
     def click_random_element(self, element: str):
         if not self._is_driver_valid():
             return
@@ -119,15 +126,7 @@ class WebController:
             return
         self._action_click_element(element=link)
 
-    def _dump_window_rect(self):
-        if not self._is_driver_valid():
-            return
-        loc = self.window_position()
-        size = self.driver.get_window_size()
-        logging.info(f'{loc} -> {size}')
-
-    def _move_mouse_to_title_center(self, offset_x: int = 0, offset_y: int = 0,
-                                    duration=0.3):
+    def drag(self, offset_x: int = 0, offset_y: int = 0, duration=0.3):
         if not self._is_driver_valid():
             return
         loc = self.window_position()
@@ -136,34 +135,63 @@ class WebController:
         x = loc['x']
         y = loc['y']
         w = size['width']
-        offset = w // random.randint(3, 10)
+        offset = w // 8
         # logging.info(f'offset: {offset}')
         target_x = x + 5 + offset
         target_y = y + 5
-        autogui.moveTo(x=target_x, y=target_y, duration=duration)
-        autogui.drag(xOffset=offset_x, yOffset=offset_y, duration=duration)
+        self.mouse_move(x=target_x, y=target_y, duration=duration)
+        gui.drag(xOffset=offset_x, yOffset=offset_y, duration=duration)
         # self._dump_window_rect()
 
     def quit(self):
         if self.driver is not None:
             self.driver.quit()
 
+    # endregion
+
+    # region pyautogui
+    @staticmethod
+    def mouse_move(x: float, y: float, duration: float = 0.3):
+        gui.moveTo(x=x, y=y, duration=duration)
+
+    @staticmethod
+    def mouse_click(x: float, y: float, duration: float = 0.3):
+        gui.click(x=x, y=y, duration=duration)
+
+    @staticmethod
+    def mouse_doubleclick(x: float, y: float, duration: float = 0.3):
+        gui.doubleClick(x=x, y=y, duration=duration)
+
+    @staticmethod
+    def mouse_click_right(x: float, y: float, duration: float = 0.3):
+        gui.rightClick(x=x, y=y, duration=duration)
+
+    @staticmethod
+    def key_press(key: str, presses: int = 1, interval: float = 0.0):
+        gui.press(key, presses=presses, interval=interval)
+
+    @staticmethod
+    def key_typewrite(text: str, interval: float = 0.0):
+        gui.typewrite(text, interval)
+
+    @staticmethod
+    def key_hotkey(key1: str, key2: str):
+        gui.hotkey(key1, key2)
+
+    # endregion
+
 
 if __name__ == '__main__':
     from common import setting_logging
 
-    setting_logging()
-    # ctl1 = WebController()
-    # ctl1.open_browser('https://www.gamer.com.tw/')
-    # ctl1.click_element('a', 1)
-    ctl2 = WebController()
-    ctl2.open_browser('https://www.gamer.com.tw/')
-    # ctl2.click_element('a', 275)
-    ctl2._move_mouse_to_title_center()
 
-    print('sleep...')
-    time.sleep(3)
-    # ctl1.quit()
-    # ctl2.quit()
-    if platform.system() == 'Windows':
-        os.system("pause")
+    def test():
+        setting_logging()
+        ctl2 = Controller()
+        ctl2.open_browser('https://www.gamer.com.tw/')
+        ctl2.drag(offset_x=100, offset_y=100)
+        time.sleep(3)
+        ctl2.quit()
+
+
+    test()
