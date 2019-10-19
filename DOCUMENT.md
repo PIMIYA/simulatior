@@ -11,7 +11,7 @@
 固定參數:
 
 ```text
-time: float, 該動作將在此 x 秒執行
+id: str, browser id, 若操作對象非 browser 則可以不必有
 type: int, Action type 的表示值
 args: { }, 各動作特有參數
 ```
@@ -56,6 +56,41 @@ index: int, 第 x 個元素，若無該元素則不會作用；若 index 超過�
 
 ```text
 element: string, HTML element tag。
+```
+
+### DRAG_BROWSER_WIN = 104
+
+拖曳瀏覽器視窗
+
+參數說明:
+
+```text
+offset_x: int = 0 移動 X 距離(-往右 +往左)
+offset_y: int = 0 移動 Y 距離(-往上 +往下)
+duration: float = 0.3 拖曳的時間
+```
+
+### RESIZE_BROWSER_WIN = 105
+
+改變瀏覽器大小
+
+參數說明:
+
+```text
+target_width: int 目標寬
+target_height: int 目標高
+move_duration: float = 0.3 移動到視窗右下的時間
+drag_duration: float = 0.3 拖曳大小的時間
+```
+
+### CLOSE_BROWSER_WIN = 106
+
+關閉瀏覽器
+
+參數說明:
+
+```text
+無
 ```
 
 ### MOUSE_MOVE = 200
@@ -118,7 +153,7 @@ interval: float, 間隔幾秒按下一次，預設為 0.0
 
 輸入一串文字，只能英數。
 若有中文需求可能需要使用 [pyperclip](https://github.com/asweigart/pyperclip)
-透過 copy/paste 的方式製造出輸入中文的樣子 
+透過 copy/paste 的方式製造出輸入中文的樣子
 
 參數說明:
 
