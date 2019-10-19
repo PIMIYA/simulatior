@@ -12,7 +12,7 @@ from setting import setting_logging
 
 
 class TheTCPHandler(socketserver.BaseRequestHandler):
-    def __init__(self):
+    def setup(self):
         self.mgr = Manager()
 
     def handle(self):

@@ -7,7 +7,7 @@ from controller import Controller
 
 class Manager:
 
-    def __init__(self):
+    def __init__(self) -> object:
         self.controllers: typing.Dict[str, Controller] = {}
 
     def get_or_create(self, name: [str, None]) -> Controller:
