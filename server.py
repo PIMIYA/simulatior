@@ -12,9 +12,6 @@ from setting import setting_logging
 
 
 class TheTCPHandler(socketserver.BaseRequestHandler):
-    def setup(self):
-        self.mgr = Manager()
-
     def handle(self):
         # self.request is the TCP socket connected to the client
         self.data = self.request.recv(1024).strip()
@@ -29,7 +26,7 @@ class TheTCPHandler(socketserver.BaseRequestHandler):
             action_val = json_data["type"]
             args = json_data["args"]
             action = ActionType(action_val)
-            self.mgr.do_action(name=name, action=action, args=args)
+            self.server.mgr.do_action(name=name, action=action, args=args)
         except Exception as e:
             error_class = e.__class__.__name__
             detail = e.args[0]
@@ -60,6 +57,7 @@ def main(host, port):
         print(f'Server running on {host}:{port}')
         print('Press Ctrl-C to quit.')
         try:
+            server.mgr = Manager()
             server.serve_forever()
         except KeyboardInterrupt:
             sys.stdout.write("Server stopped.\n\n")
