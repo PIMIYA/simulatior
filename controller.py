@@ -34,6 +34,7 @@ class Controller:
             ActionType.TRIGGER_ELEMENT_RANDOM: self.click_random_element,
             ActionType.DRAG_BROWSER_WIN: self.drag_browser,
             ActionType.RESIZE_BROWSER_WIN: self.resize_browser,
+            ActionType.CLOSE_BROWSER_WIN: self.close_browser,
             ActionType.MOUSE_MOVE: self.mouse_move,
             ActionType.MOUSE_CLICK: self.mouse_click,
             ActionType.MOUSE_DOUBLECLICK: self.mouse_doubleclick,
