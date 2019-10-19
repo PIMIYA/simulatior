@@ -10,6 +10,7 @@ from selenium.webdriver import ActionChains
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
+from action_type import ActionType
 
 
 # 如果有需要把滑鼠移動到左上角需要打開此設定
@@ -26,6 +27,21 @@ class Controller:
         self.xOffset = 6
         self.yOffset = 0
         self.driver: WebDriver = None
+        self._actionMethods = {
+            ActionType.OPEN_BROWSER: self.open_browser,
+            ActionType.OPEN_URL: self.open_browser,
+            ActionType.TRIGGER_ELEMENT_INDEX: self.click_element,
+            ActionType.TRIGGER_ELEMENT_RANDOM: self.click_random_element,
+            ActionType.DRAG_BROWSER_WIN: self.drag_browser,
+            ActionType.RESIZE_BROWSER_WIN: self.resize_browser,
+            ActionType.MOUSE_MOVE: self.mouse_move,
+            ActionType.MOUSE_CLICK: self.mouse_click,
+            ActionType.MOUSE_DOUBLECLICK: self.mouse_doubleclick,
+            ActionType.MOUSE_CLICK_RIGHT: self.mouse_click_right,
+            ActionType.KEY_PRESS: self.key_press,
+            ActionType.KEY_TYPEWRITE: self.key_typewrite,
+            ActionType.KEY_HOTKEY: self.key_hotkey,
+        }
 
     def _dump_window_rect(self):
         if not self._is_driver_valid():
@@ -204,3 +220,6 @@ class Controller:
         gui.hotkey(key1, key2)
 
     # endregion
+
+    def do_action(self, action: ActionType, **kwargs):
+        self._actionMethods[action](**kwargs)

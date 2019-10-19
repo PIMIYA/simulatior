@@ -4,10 +4,16 @@ import socketserver
 import sys
 import traceback
 
-from common import setting_logging
+import click
+
+from action_type import ActionType
+from manager import Manager
+from setting import setting_logging
 
 
 class TheTCPHandler(socketserver.BaseRequestHandler):
+    def __init__(self):
+        self.mgr = Manager()
 
     def handle(self):
         # self.request is the TCP socket connected to the client
@@ -19,10 +25,11 @@ class TheTCPHandler(socketserver.BaseRequestHandler):
             "msg": ""
         }
         try:
-            action = json_data["action"]
+            name = json_data["id"]
+            action_val = json_data["type"]
             args = json_data["args"]
-            logging.info(f"Action: {action}, Args: {args}")
-            # TODO: do action
+            action = ActionType(action_val)
+            self.mgr.do_action(name=name, action=action, args=args)
         except Exception as e:
             error_class = e.__class__.__name__
             detail = e.args[0]
@@ -43,14 +50,21 @@ class TheTCPHandler(socketserver.BaseRequestHandler):
             self.request.sendall(bytes(json.dumps(response), "utf-8"))
 
 
-if __name__ == "__main__":
-    setting_logging()
-    HOST, PORT = "localhost", 1999
-    with socketserver.TCPServer((HOST, PORT), TheTCPHandler) as server:
-        print(f'Server running on {HOST}:{PORT}')
+@click.command()
+@click.option("--host", default="localhost", show_default=True, help="")
+@click.option("--port", default=9999, show_default=True, help="")
+def main(host, port):
+    """ Run the simulatior server """
+    setting_logging(log_level=logging.INFO)
+    with socketserver.TCPServer((host, port), TheTCPHandler) as server:
+        print(f'Server running on {host}:{port}')
         print('Press Ctrl-C to quit.')
         try:
             server.serve_forever()
         except KeyboardInterrupt:
             sys.stdout.write("Server stopped.\n\n")
             sys.stdout.flush()
+
+
+if __name__ == "__main__":
+    main()
