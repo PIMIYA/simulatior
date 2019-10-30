@@ -14,37 +14,42 @@ from setting import setting_logging
 class TheTCPHandler(socketserver.BaseRequestHandler):
     def handle(self):
         # self.request is the TCP socket connected to the client
-        self.data = self.request.recv(1024).strip()
-        logging.info(self.data)
-        json_data = json.loads(self.data)
-        response = {
-            "status": 0,
-            "msg": ""
-        }
-        try:
-            name = json_data["id"]
-            action_val = json_data["type"]
-            args = json_data["args"]
-            action = ActionType(action_val)
-            self.server.mgr.do_action(name=name, action=action, args=args)
-        except Exception as e:
-            error_class = e.__class__.__name__
-            detail = e.args[0]
-            cl, exc, tb = sys.exc_info()
-            last_call_stack = traceback.extract_tb(tb)[-1]
-            file_name = last_call_stack[0]
-            line_num = last_call_stack[1]
-            func_name = last_call_stack[2]
-            err_msg = f"File \"{file_name}\", " \
-                      f"line {line_num}, " \
-                      f"in {func_name}: [{error_class}] {detail}"
-            logging.error(err_msg)
+        logging.info(f"Connected from: {self.client_address}")
+        # handle socket
+        while True:
+            data = self.request.recv(1024).strip()
+            if not data:
+                continue
+            logging.info(f"Received: {data}")
+            json_data = json.loads(data)
             response = {
-                "status": -1,
-                "msg": err_msg
+                "status": 0,
+                "msg": ""
             }
-        finally:
-            self.request.sendall(bytes(json.dumps(response), "utf-8"))
+            try:
+                name = str(json_data["id"])
+                action_val = json_data["type"]
+                args = json_data["args"]
+                action = ActionType(action_val)
+                self.server.mgr.do_action(name=name, action=action, args=args)
+            except Exception as e:
+                error_class = e.__class__.__name__
+                detail = e.args[0]
+                cl, exc, tb = sys.exc_info()
+                last_call_stack = traceback.extract_tb(tb)[-1]
+                file_name = last_call_stack[0]
+                line_num = last_call_stack[1]
+                func_name = last_call_stack[2]
+                err_msg = f"File \"{file_name}\", " \
+                          f"line {line_num}, " \
+                          f"in {func_name}: [{error_class}] {detail}"
+                logging.error(err_msg)
+                response = {
+                    "status": -1,
+                    "msg": err_msg
+                }
+            finally:
+                self.request.sendall(bytes(json.dumps(response), "utf-8"))
 
 
 @click.command()
